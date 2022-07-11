@@ -1,6 +1,3 @@
-POST http://smt_rack/test?id=1
-Content-Type: application/json
-
-{
-    "bin":0
-}
+GET http://192.168.1.162/data
+###
+POST http://192.168.1.162/reset

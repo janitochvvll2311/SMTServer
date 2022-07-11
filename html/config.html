@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='UTF-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <link rel='stylesheet' href='styles.css'>
+    <script src='scripts.js'></script>
+    <title>SMT RACK Config</title>
+</head>
+
+<body>
+    <form method='post' action='config' class='column-container'>
+        <div>
+            <h2>Wireless settings</h2>
+            <label>
+                Hostname: <br />
+                <input id='hostname' name='hostname' type='text' />
+            </label>
+            <br />
+            <label>
+                Host password: <br />
+                <input id='hostpass' name='hostpass' type='password' value='**********' />
+            </label>
+            <br />
+            <label>
+                SSID name: <br />
+                <input id='ssidname' name='ssidname' type='text' />
+            </label>
+            <br />
+            <label>
+                SSID password: <br />
+                <input id='ssidpass' name='ssidpass' type='password' value='**********' />
+            </label>
+            <br />
+        </div>
+        <div>
+            <h2>Admin settings</h2>
+            <label>
+                Username: <br />
+                <input id='username' name='username' type='text' />
+            </label>
+            <br />
+            <label>
+                User password: <br />
+                <input id='userpass' name='userpass' type='password' value='**********' />
+            </label>
+        </div>
+        <br />
+        <input type='submit' value='save' />
+    </form>
+</body>
+
+</html>
