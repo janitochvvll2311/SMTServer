@@ -1,0 +1,6 @@
+POST http://smt_rack/test?id=1
+Content-Type: application/json
+
+{
+    "bin":0
+}
