@@ -23,6 +23,8 @@ const auto DEFAULT_USERPASS = "SMT_PASS";
 
 EEPROMArray<char[256]> username;
 EEPROMArray<char[256]> userpass;
+uint64_t login_time = 0;
+uint64_t login_timeout = 1000 * 60 * 5;
 bool user_logged = false;
 
 StaticJsonDocument<1024> document;
@@ -69,6 +71,7 @@ void server_Login()
         else
         {
             user_logged = true;
+            login_time = millis();
             Serial.println("User login successfull!");
             server.send(HTTP_OK, "text/html", HTML_CONFIG);
         }
@@ -79,12 +82,19 @@ void server_Login()
     }
 }
 
+void server_Logout()
+{
+    user_logged = false;
+    Serial.println("User logout");
+    server.send(HTTP_OK, "text/html", HTML_LOGIN);
+}
+
 void server_Index()
 {
     if (!user_logged)
-        server.send(HTTP_OK, "text/html", HTML_LOGIN);
+        server.send(HTTP_UNAUTHORIZED, "text/html", HTML_LOGIN);
     else
-        return server.send(HTTP_OK, "text/html", HTML_CONFIG);
+        server.send(HTTP_OK, "text/html", HTML_CONFIG);
 }
 
 void server_Data()
@@ -97,6 +107,8 @@ void server_Data()
         document["hostname"] = hostname.get(DEFAULT_HOSTNAME);
         document["ssidname"] = ssidname.get("");
         document["username"] = username.get(DEFAULT_USERNAME);
+        document["apip"] = WiFi.softAPIP().toString();
+        document["localip"] = WiFi.localIP().toString();
         String text;
         text.reserve(1024);
         serializeJson(document, text);
@@ -107,11 +119,16 @@ void server_Data()
 void server_Config()
 {
     if (server.method() == HTTP_GET)
-        server.send(HTTP_OK, "text/html", HTML_CONFIG);
+    {
+        if (!user_logged)
+            server.send(HTTP_UNAUTHORIZED, "text/html", HTML_LOGIN);
+        else
+            server.send(HTTP_OK, "text/html", HTML_CONFIG);
+    }
     else if (server.method() == HTTP_POST)
     {
         if (!user_logged)
-            server.send(HTTP_UNAUTHORIZED);
+            server.send(HTTP_UNAUTHORIZED, "text/html", HTML_LOGIN);
         else
         {
             Serial.print("Saving configuration...");
@@ -168,6 +185,7 @@ void initServer()
         server.on("/scripts.js", HTTP_GET, server_Scripts);
         server.on("/data", HTTP_GET, server_Data);
         server.on("/login", HTTP_ANY, server_Login);
+        server.on("/logout", HTTP_ANY, server_Logout);
         server.on("/config", HTTP_ANY, server_Config);
         server.on("/reset", HTTP_POST, server_Reset);
         server.on("/", HTTP_GET, server_Index);
@@ -189,6 +207,11 @@ void resetServer()
 
 void handleClient()
 {
+    if (user_logged && ((login_time + login_timeout) < millis()))
+    {
+        user_logged = false;
+        Serial.println("User logout by timeout");
+    }
     server.handleClient();
 }
 

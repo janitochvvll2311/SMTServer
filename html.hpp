@@ -81,6 +81,11 @@ const auto HTML_CONFIG = "\n\
             </label>\n\
             <br />\n\
             <label>\n\
+                AP IP:\n\
+                <input id='apip' name='apip' type='text' readonly/>\n\
+            </label>\n\
+            <br />\n\
+            <label>\n\
                 SSID name: <br />\n\
                 <input id='ssidname' name='ssidname' type='text' />\n\
             </label>\n\
@@ -88,6 +93,11 @@ const auto HTML_CONFIG = "\n\
             <label>\n\
                 SSID password: <br />\n\
                 <input id='ssidpass' name='ssidpass' type='password' />\n\
+            </label>\n\
+            <br />\n\
+            <label>\n\
+                Local IP:\n\
+                <input id='localip' name='localip' type='text' readonly/>\n\
             </label>\n\
             <br />\n\
         </div>\n\
@@ -105,6 +115,7 @@ const auto HTML_CONFIG = "\n\
         </div>\n\
         <br />\n\
         <input type='submit' value='save' />\n\
+        <a href='/logout'>Logout</a>\n\
     </form>\n\
 </body>\n\
 \n\
@@ -121,6 +132,8 @@ const fetchData = async () => {\n\
     find('hostname').value = data.hostname;\n\
     find('ssidname').value = data.ssidname;\n\
     find('username').value = data.username;\n\
+    find('apip').value = data.apip;\n\
+    find('localip').value = data.localip;\n\
 }\n\
 \n\
 window.onload = () => {\n\

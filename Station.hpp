@@ -7,6 +7,7 @@
 
 const auto DEFAULT_HOSTNAME = "SMT_RACK";
 const auto DEFAULT_HOSTPASS = "SMT_PASS";
+const auto DEFAULT_APIP = IPAddress(192, 168, 4, 1);
 
 EEPROMArray<char[256]> hostname;
 EEPROMArray<char[256]> hostpass;
@@ -22,8 +23,8 @@ void connectWiFi()
         return;
     }
     Serial.print("Connecting to ");
-    Serial.print(ssidname.get());
-    WiFi.begin(ssidname.get(), ssidpass.get(""));
+    Serial.print(ssidname.get(""));
+    WiFi.begin(ssidname.get(""), ssidpass.get(""));
     for (size_t i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++)
     {
         Serial.print('.');

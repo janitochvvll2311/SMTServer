@@ -6,12 +6,15 @@ String input()
 {
     while (!Serial.available())
         delay(100);
-    return Serial.readString();
+    auto in = Serial.readString();
+    in.trim();
+    return in;
 }
 
 void setup()
 {
     Serial.begin(9600);
+    Serial.println("--- --- --- --- ---");
     initStorage();
     initStation();
     initServer();
@@ -20,4 +23,11 @@ void setup()
 void loop()
 {
     handleClient();
+    delay(100);
+    if (Serial.available())
+    {
+        auto in = input();
+        if (in == "reset")
+            server_Reset();
+    }
 }
