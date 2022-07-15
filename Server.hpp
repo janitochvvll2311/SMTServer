@@ -6,6 +6,7 @@
 #include <ArduinoJson.h>
 #include "Storage.hpp"
 #include "Station.hpp"
+#include "Light.hpp"
 #include "html.hpp"
 
 const int HTTP_OK = 200;
@@ -109,6 +110,8 @@ void server_Data()
         document["username"] = username.get(DEFAULT_USERNAME);
         document["apip"] = WiFi.softAPIP().toString();
         document["localip"] = WiFi.localIP().toString();
+        document["ledcount"] = ledcount.get(0);
+        document["rowcount"] = rowcount.get(0);
         String text;
         text.reserve(1024);
         serializeJson(document, text);
@@ -138,6 +141,8 @@ void server_Config()
             auto spass = getArg(server, "ssidpass");
             auto uname = getArg(server, "username");
             auto upass = getArg(server, "userpass");
+            auto lcount = getArg(server, "ledcount");
+            auto rcount = getArg(server, "rowcount");
             //
             if (hname != "")
                 hostname.set(hname.c_str(), hname.length() + 1);
@@ -151,6 +156,10 @@ void server_Config()
                 username.set(uname.c_str(), uname.length() + 1);
             if (upass != "")
                 userpass.set(upass.c_str(), upass.length() + 1);
+            if (lcount != "")
+                ledcount.set(lcount.toInt());
+            if (rcount != "")
+                rowcount.set(rcount.toInt());
             Serial.println(" complete");
             server.send(HTTP_OK, "text/html", HTML_CONFIG);
         }
@@ -170,8 +179,74 @@ void server_Reset()
     ssidpass.erase();
     username.erase();
     userpass.erase();
+    ledcount.erase();
+    rowcount.erase();
     Serial.println(" complete");
     server.send(HTTP_OK);
+}
+
+void server_SetPixelRange()
+{
+    if (isLightConfigured())
+    {
+        auto payload = getArg(server, "plain");
+        deserializeJson(document, payload);
+        //
+        if (
+            !document["channel"].is<int>() ||
+            !document["lower"].is<int>() ||
+            !document["upper"].is<int>() ||
+            !document["a"].is<int>() ||
+            !document["r"].is<int>() ||
+            !document["g"].is<int>() ||
+            !document["b"].is<int>() ||
+            !document["clear"].is<bool>())
+            server.send(HTTP_BAD_REQUEST);
+        else
+        {
+            updateLight(
+                document["channel"].as<int>(),
+                document["lower"].as<int>(),
+                document["upper"].as<int>(),
+                document["r"].as<int>(),
+                document["g"].as<int>(),
+                document["b"].as<int>(),
+                document["clear"].as<bool>());
+            server.send(HTTP_OK);
+        }
+    }
+    else
+    {
+        server.send(HTTP_SERVER_ERROR);
+    }
+}
+void server_ClearPixelRange()
+{
+    if (isLightConfigured())
+    {
+        auto payload = getArg(server, "plain");
+        deserializeJson(document, payload);
+        //
+        if (
+            !document["channel"].is<int>() ||
+            !document["lower"].is<int>() ||
+            !document["upper"].is<int>())
+            server.send(HTTP_BAD_REQUEST);
+        else
+        {
+            updateLight(
+                document["channel"].as<int>(),
+                document["lower"].as<int>(),
+                document["upper"].as<int>(),
+                0, 0, 0,
+                false);
+            server.send(HTTP_OK);
+        }
+    }
+    else
+    {
+        server.send(HTTP_SERVER_ERROR);
+    }
 }
 
 void initServer()
@@ -187,7 +262,10 @@ void initServer()
         server.on("/login", HTTP_ANY, server_Login);
         server.on("/logout", HTTP_ANY, server_Logout);
         server.on("/config", HTTP_ANY, server_Config);
-        server.on("/reset", HTTP_POST, server_Reset);
+        // server.on("/reset", HTTP_POST, server_Reset);
+        // server.on("/light", HTTP_POST, server_Light);
+        server.on("/api/v1/leds/setpixelrange", HTTP_POST, server_SetPixelRange);
+        server.on("/api/v1/leds/clearpixelrange", HTTP_POST, server_ClearPixelRange);
         server.on("/", HTTP_GET, server_Index);
         //
         server.begin();

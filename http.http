@@ -1,3 +1,23 @@
-GET http://192.168.1.162/data
+POST  http://192.168.43.20/api/v1/leds/setpixelrange
+Content-Type: application/json
+
+{
+    "channel":0,
+    "lower":0,
+    "upper":20,
+    "a":0,
+    "r":0,
+    "g":0,
+    "b":255,
+    "clear":true
+}
+
 ###
-POST http://192.168.1.162/reset
+POST  http://192.168.43.20/api/v1/leds/clearpixelrange
+Content-Type: application/json
+
+{
+    "channel":0,
+    "lower":0,
+    "upper":9
+}
