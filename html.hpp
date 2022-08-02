@@ -97,7 +97,17 @@ const auto HTML_CONFIG = R"(
             <br />
             <label>
                 Local IP:
-                <input id='localip' name='localip' type='text' readonly/>
+                <input id='localip' name='localip' type='text'/>
+            </label>
+            <br />
+            <label>
+                Gateway:
+                <input id='gateway' name='gateway' type='text'/>
+            </label>
+            <br />
+            <label>
+                Mask:
+                <input id='subnet' name='subnet' type='text'/>
             </label>
             <br />
         </div>
@@ -148,6 +158,9 @@ const fetchData = async () => {
     find('localip').value = data.localip;
     find('ledcount').value = data.ledcount;
     find('rowcount').value = data.rowcount;
+    find('localip').value = data.localip;
+    find('gateway').value = data.gateway;
+    find('subnet').value = data.subnet;
 }
 
 window.onload = () => {

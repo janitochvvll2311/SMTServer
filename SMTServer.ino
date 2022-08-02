@@ -29,7 +29,7 @@ void setup()
     Serial.begin(9600);
     Serial.println("--- --- --- --- ---");
     initStorage();
-    // resetDelay();
+    resetDelay();
     initLight();
     initStation();
     initServer();

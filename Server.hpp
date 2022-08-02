@@ -110,6 +110,8 @@ void server_Data()
         document["username"] = username.get(DEFAULT_USERNAME);
         document["apip"] = WiFi.softAPIP().toString();
         document["localip"] = WiFi.localIP().toString();
+        document["gateway"] = WiFi.gatewayIP().toString();
+        document["subnet"] = WiFi.subnetMask().toString();
         document["ledcount"] = ledcount.get(0);
         document["rowcount"] = rowcount.get(0);
         String text;
@@ -143,7 +145,11 @@ void server_Config()
             auto upass = getArg(server, "userpass");
             auto lcount = getArg(server, "ledcount");
             auto rcount = getArg(server, "rowcount");
+            auto lip = getArg(server, "localip");
+            auto gate = getArg(server, "gateway");
+            auto snet = getArg(server, "subnet");
             //
+            IPAddress cache;
             if (hname != "")
                 hostname.set(hname.c_str(), hname.length() + 1);
             if (hpass != "")
@@ -160,6 +166,21 @@ void server_Config()
                 ledcount.set(lcount.toInt());
             if (rcount != "")
                 rowcount.set(rcount.toInt());
+            if (lip != "")
+            {
+                cache.fromString(lip);
+                localip.set(cache);
+            }
+            if (gate != "")
+            {
+                cache.fromString(gate);
+                gateway.set(cache);
+            }
+            if (snet != "")
+            {
+                cache.fromString(snet);
+                subnet.set(cache);
+            }
             Serial.println(" complete");
             server.send(HTTP_OK, "text/html", HTML_CONFIG);
         }
@@ -173,14 +194,10 @@ void server_Config()
 void server_Reset()
 {
     Serial.print("Reseting configuration...");
-    hostname.erase();
-    hostpass.erase();
-    ssidname.erase();
-    ssidpass.erase();
+    resetLight();
+    resetStation();
     username.erase();
     userpass.erase();
-    ledcount.erase();
-    rowcount.erase();
     Serial.println(" complete");
     server.send(HTTP_OK);
 }
@@ -268,6 +285,7 @@ void initServer()
         server.on("/api/v1/leds/clearpixelrange", HTTP_POST, server_ClearPixelRange);
         server.on("/", HTTP_GET, server_Index);
         //
+        server.enableCORS(true);
         server.begin();
         Serial.print("Server listen port: ");
         Serial.println(server.getServer().port());

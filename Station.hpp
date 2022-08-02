@@ -13,6 +13,9 @@ EEPROMArray<char[256]> hostname;
 EEPROMArray<char[256]> hostpass;
 EEPROMArray<char[256]> ssidname;
 EEPROMArray<char[256]> ssidpass;
+EEPROMVar<IPAddress> localip;
+EEPROMVar<IPAddress> gateway;
+EEPROMVar<IPAddress> subnet;
 bool station_initialized = false;
 
 void connectWiFi()
@@ -22,10 +25,16 @@ void connectWiFi()
         Serial.println("No SSID/PASS configured");
         return;
     }
+    //
+    if (localip.has() && gateway.has() && subnet.has())
+    {
+        WiFi.config(localip.get(), gateway.get(), subnet.get());
+    }
+    //
     Serial.print("Connecting to ");
     Serial.print(ssidname.get(""));
     WiFi.begin(ssidname.get(""), ssidpass.get(""));
-    for (size_t i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++)
+    for (size_t i = 0; i < 10 && WiFi.status() != WL_CONNECTED; i++)
     {
         Serial.print('.');
         delay(1000);
@@ -70,6 +79,9 @@ void resetStation()
     hostpass.erase();
     ssidname.erase();
     ssidpass.erase();
+    localip.erase();
+    gateway.erase();
+    subnet.erase();
 }
 
 #endif

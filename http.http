@@ -3,13 +3,13 @@ Content-Type: application/json
 
 {
     "channel":0,
-    "lower":0,
-    "upper":20,
+    "lower":12,
+    "upper":15,
     "a":0,
     "r":0,
-    "g":0,
-    "b":255,
-    "clear":true
+    "g":255,
+    "b":0,
+    "clear":false
 }
 
 ###
@@ -18,6 +18,6 @@ Content-Type: application/json
 
 {
     "channel":0,
-    "lower":0,
-    "upper":9
+    "lower":12,
+    "upper":15
 }
