@@ -1,35 +1,49 @@
+/**
+ * @file Server.hpp
+ * @author Juan Jesus Chavez Villa (janitochvvll2311@gmail.com)
+ * @brief Inline module for Handle HTTP Web requests
+ * @version 0.1.0
+ * @date 2022-08-02
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "Arduino.h"
-#include <ESP8266WebServer.h>
-#include <ArduinoJson.h>
-#include "Storage.hpp"
-#include "Station.hpp"
-#include "Light.hpp"
-#include "html.hpp"
+#include "Arduino.h"          // Main Arduino library
+#include <ESP8266WebServer.h> // Specific device Web Server library
+#include <ArduinoJson.h>      // Json writer/reader
+#include "Storage.hpp"        // Storage module
+#include "Station.hpp"        // Station module
+#include "Light.hpp"          // Light module
+#include "html.hpp"           // html/css/js files
 
-const int HTTP_OK = 200;
-const int HTTP_BAD_REQUEST = 400;
-const int HTTP_UNAUTHORIZED = 401;
-const int HTTP_NOT_FOUND = 404;
-const int HTTP_METHOD_NOT_ALLOWED = 405;
-const int HTTP_SERVER_ERROR = 500;
+const int HTTP_OK = 200;                 // Ok HTTP status code
+const int HTTP_BAD_REQUEST = 400;        // Bad Request HTTP status code
+const int HTTP_UNAUTHORIZED = 401;       // Unauthorized HTTP status code
+const int HTTP_NOT_FOUND = 404;          // Not Found HTTP status code
+const int HTTP_METHOD_NOT_ALLOWED = 405; // Method Not Allowed HTTP status code
+const int HTTP_SERVER_ERROR = 500;       // Internal Server Error HTTP status code
 
-ESP8266WebServer server(80);
-bool server_initialized = false;
+ESP8266WebServer server(80);     // Specific device Web Server instance
+bool server_initialized = false; // Initialized Server module flag
 
-const auto DEFAULT_USERNAME = "SMT_ADMIN";
-const auto DEFAULT_USERPASS = "SMT_PASS";
+const auto DEFAULT_USERNAME = "SMT_ADMIN"; // Default Server Admin username
+const auto DEFAULT_USERPASS = "SMT_PASS";  // Default Server Admin password
 
-EEPROMArray<char[256]> username;
-EEPROMArray<char[256]> userpass;
-uint64_t login_time = 0;
-uint64_t login_timeout = 1000 * 60 * 5;
-bool user_logged = false;
+EEPROMArray<char[256]> username;        // Server Admin username persistent var
+EEPROMArray<char[256]> userpass;        // Server Admin password persistent var
+uint64_t login_time = 0;                // Admin login timepoint
+uint64_t login_timeout = 1000 * 60 * 5; // Admin login timeout
+bool user_logged = false;               // Admin logged flag
 
-StaticJsonDocument<1024> document;
+StaticJsonDocument<1024> document; // Json Document cache
 
+/**
+ * @brief Get the HTTP Request query string param values
+ */
 String getArg(const ESP8266WebServer &server, const String &name)
 {
     auto acount = server.args();
@@ -43,16 +57,25 @@ String getArg(const ESP8266WebServer &server, const String &name)
     return "";
 }
 
+/**
+ * @brief Return server stylesheet
+ */
 void server_Styles()
 {
     server.send(HTTP_OK, "text/css", CSS_STYLES);
 }
 
+/**
+ * @brief Return server javascript
+ */
 void server_Scripts()
 {
     server.send(HTTP_OK, "text/javascript", JS_SCRIPTS);
 }
 
+/**
+ * @brief Proccess login form request
+ */
 void server_Login()
 {
     // Serial.println("Request received!");
@@ -83,6 +106,9 @@ void server_Login()
     }
 }
 
+/**
+ * @brief Proccess logout request
+ */
 void server_Logout()
 {
     user_logged = false;
@@ -90,6 +116,9 @@ void server_Logout()
     server.send(HTTP_OK, "text/html", HTML_LOGIN);
 }
 
+/**
+ * @brief Process main page request
+ */
 void server_Index()
 {
     if (!user_logged)
@@ -98,6 +127,9 @@ void server_Index()
         server.send(HTTP_OK, "text/html", HTML_CONFIG);
 }
 
+/**
+ * @brief Process API call for request Server settings
+ */
 void server_Data()
 {
     if (!user_logged)
@@ -121,6 +153,10 @@ void server_Data()
     }
 }
 
+/**
+ * @brief Process config page requests.
+ * Also process API call for save settings
+ */
 void server_Config()
 {
     if (server.method() == HTTP_GET)
@@ -191,6 +227,9 @@ void server_Config()
     }
 }
 
+/**
+ * @brief Reset all persistent vars
+ */
 void server_Reset()
 {
     Serial.print("Reseting configuration...");
@@ -202,6 +241,9 @@ void server_Reset()
     server.send(HTTP_OK);
 }
 
+/**
+ * @brief Process API calls for turn on LED Strip range
+ */
 void server_SetPixelRange()
 {
     if (isLightConfigured())
@@ -237,6 +279,10 @@ void server_SetPixelRange()
         server.send(HTTP_SERVER_ERROR);
     }
 }
+
+/**
+ * @brief Process API calls for turn off LED Strip range
+ */
 void server_ClearPixelRange()
 {
     if (isLightConfigured())
@@ -266,6 +312,9 @@ void server_ClearPixelRange()
     }
 }
 
+/**
+ * @brief Initialize Server module
+ */
 void initServer()
 {
     if (!server_initialized)
@@ -295,12 +344,18 @@ void initServer()
     }
 }
 
+/**
+ * @brief Reset Server module stored settings
+ */
 void resetServer()
 {
     username.erase();
     userpass.erase();
 }
 
+/**
+ * @brief Handle client session time and requests
+ */
 void handleClient()
 {
     if (user_logged && ((login_time + login_timeout) < millis()))
